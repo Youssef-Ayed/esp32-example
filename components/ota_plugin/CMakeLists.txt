@@ -1,0 +1,18 @@
+idf_component_register(
+    SRCS 
+        "ota_plugin.c"
+        "ota_http_client.c"
+        "ota_status.c"
+        "ota_log.c"
+        "ota_trace.c"
+    INCLUDE_DIRS "."
+    REQUIRES 
+        esp_http_client
+        esp_https_ota
+        esp_wifi
+        json
+        nvs_flash
+        esp_netif
+        esp_timer
+        app_update
+)
