@@ -15,4 +15,6 @@ idf_component_register(
         esp_netif
         esp_timer
         app_update
+    PRIV_REQUIRES
+        mbedtls
 )
