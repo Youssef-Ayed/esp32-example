@@ -7,13 +7,13 @@ extern "C"
 #endif
 
 // Server Configuration
-#define OTA_SERVER_BASE_URL "http://192.168.0.84:5000/api" // Backend server URL
-#define OTA_SERVER_TIMEOUT_MS 30000                        // 30 seconds timeout for HTTP requests
-#define OTA_MAX_HTTP_OUTPUT_BUFFER 2048                    // Maximum buffer size for HTTP responses
+#define OTA_SERVER_BASE_URL "http://192.168.10.149:5000/api" // Backend server URL
+#define OTA_SERVER_TIMEOUT_MS 30000                          // 30 seconds timeout for HTTP requests
+#define OTA_MAX_HTTP_OUTPUT_BUFFER 2048                      // Maximum buffer size for HTTP responses
 
 // Device Configuration
-#define DEVICE_ID "Test_Device_001" // This can be generated or flashed
-#define FIRMWARE_REF "ESP-Main"    // Current firmware reference, can be updated dynamically
+#define DEVICE_ID "Test_Device_001"   // This can be generated or flashed
+#define FIRMWARE_REF "esp32-devboard" // Current firmware reference, can be updated dynamically
 
 // OTA Configuration
 #define OTA_CHECK_INTERVAL_MS 300000    // Check for updates every 5 minutes

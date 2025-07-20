@@ -10,8 +10,8 @@
 static const char *TAG = "main";
 
 // Example WiFi credentials - replace with your actual credentials
-#define EXAMPLE_ESP_WIFI_SSID "Cafe Biene77"
-#define EXAMPLE_ESP_WIFI_PASS "bienne77"
+#define EXAMPLE_ESP_WIFI_SSID "JOJO"
+#define EXAMPLE_ESP_WIFI_PASS "JOJO240523"
 #define EXAMPLE_ESP_MAXIMUM_RETRY 5
 
 static int s_retry_num = 0;
