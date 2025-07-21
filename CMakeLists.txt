@@ -10,6 +10,7 @@ set(EXTRA_COMPONENT_DIRS ${CMAKE_SOURCE_DIR}/test)
 endif()
 
 include($ENV{IDF_PATH}/tools/cmake/project.cmake)
-include($ENV{IDF_PATH}/tools/cmake/test.cmake)
+if(EXISTS $ENV{IDF_PATH}/tools/cmake/test.cmake){
+  include($ENV{IDF_PATH}/tools/cmake/test.cmake)
+}
 project(esp32-example)
-# Include the test framework if available
