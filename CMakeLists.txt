@@ -4,10 +4,12 @@
 # CMakeLists in this exact order for cmake to work correctly
 cmake_minimum_required(VERSION 3.5)
 
-include($ENV{IDF_PATH}/tools/cmake/project.cmake)
-if(EXISTS $ENV{IDF_PATH}/tools/cmake/test.cmake)
-    include($ENV{IDF_PATH}/tools/cmake/test.cmake)
-    add_subdirectory(test)
+# Include the test directory if it exists
+if(EXISTS ${CMAKE_SOURCE_DIR}/test)
+set(EXTRA_COMPONENT_DIRS ${CMAKE_SOURCE_DIR}/test)
 endif()
+
+include($ENV{IDF_PATH}/tools/cmake/project.cmake)
+include($ENV{IDF_PATH}/tools/cmake/test.cmake)
 project(esp32-example)
 # Include the test framework if available
