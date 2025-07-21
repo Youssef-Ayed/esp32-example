@@ -5,9 +5,9 @@
 cmake_minimum_required(VERSION 3.5)
 
 include($ENV{IDF_PATH}/tools/cmake/project.cmake)
-project(esp32-example)
-
-# Include the test framework if available
 if(EXISTS $ENV{IDF_PATH}/tools/cmake/test.cmake)
     include($ENV{IDF_PATH}/tools/cmake/test.cmake)
+    add_subdirectory(test)
 endif()
+project(esp32-example)
+# Include the test framework if available
