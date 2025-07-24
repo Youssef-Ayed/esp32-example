@@ -33,19 +33,28 @@ static char current_firmware_version[32] = OTA_FIRMWARE_VERSION;
 static esp_err_t load_current_firmware_version(void)
 {
     nvs_handle_t nvs_handle;
-    esp_err_t err = nvs_open(NVS_NAMESPACE, NVS_READONLY, &nvs_handle);
+    esp_err_t err = nvs_open(NVS_NAMESPACE, NVS_READWRITE, &nvs_handle);
     if (err != ESP_OK)
     {
-        ESP_LOGW(TAG, "Could not open NVS to load firmware version, using default");
-        return ESP_OK; // Use default version
+        ESP_LOGI(TAG, "Could not open NVS, using default firmware version: %s", OTA_FIRMWARE_VERSION);
+        strcpy(current_firmware_version, OTA_FIRMWARE_VERSION);
+        return ESP_OK;
     }
 
     size_t required_size = sizeof(current_firmware_version);
     err = nvs_get_str(nvs_handle, NVS_KEY_CURRENT_VERSION, current_firmware_version, &required_size);
     if (err != ESP_OK)
     {
-        ESP_LOGW(TAG, "Could not load firmware version from NVS, using default");
+        // First boot - initialize NVS with default version
+        ESP_LOGI(TAG, "First boot detected, initializing firmware version: %s", OTA_FIRMWARE_VERSION);
         strcpy(current_firmware_version, OTA_FIRMWARE_VERSION);
+
+        // Save the default version to NVS for future boots
+        err = nvs_set_str(nvs_handle, NVS_KEY_CURRENT_VERSION, current_firmware_version);
+        if (err == ESP_OK)
+        {
+            nvs_commit(nvs_handle);
+        }
     }
     else
     {
@@ -188,25 +197,26 @@ static void ota_check_task(void *pvParameters)
 
                 current_status = OTA_STATUS_DOWNLOADING;
 
-                // Save status before attempting update
-                save_update_status("FAILED", new_version); // Assume failure, update on success
+                // Save new version and status BEFORE attempting update
+                // (because esp_https_ota restarts device on success)
+                save_current_firmware_version(new_version);
+                save_update_status("COMPLETED", new_version);
 
                 ESP_LOGI(TAG, "Starting firmware download and installation...");
                 err = ota_http_download_and_install_firmware(firmware_url);
 
                 if (err == ESP_OK)
                 {
-                    // Update firmware version and save success status
-                    save_current_firmware_version(new_version);
-                    save_update_status("COMPLETED", new_version);
-
                     ESP_LOGI(TAG, "OTA update completed successfully, restarting...");
                     current_status = OTA_STATUS_SUCCESS;
-
                     // Device will restart automatically from esp_https_ota
                 }
                 else
                 {
+                    // Restore old version and set failure status on error
+                    save_current_firmware_version(current_firmware_version);
+                    save_update_status("FAILED", new_version);
+
                     ESP_LOGE(TAG, "OTA update failed: %s", esp_err_to_name(err));
                     current_status = OTA_STATUS_FAILED;
                     ota_log_error("OTA update failed", esp_err_to_name(err), new_version);
@@ -254,10 +264,7 @@ esp_err_t ota_plugin_init(void)
     ESP_LOGI(TAG, "Initializing OTA plugin...");
     plugin_start_time = esp_timer_get_time();
 
-    // Load current firmware version from NVS
-    load_current_firmware_version();
-
-    // Initialize NVS
+    // Initialize NVS FIRST
     esp_err_t err = nvs_flash_init();
     if (err == ESP_ERR_NVS_NO_FREE_PAGES || err == ESP_ERR_NVS_NEW_VERSION_FOUND)
     {
@@ -269,6 +276,10 @@ esp_err_t ota_plugin_init(void)
         ESP_LOGE(TAG, "Failed to initialize NVS: %s", esp_err_to_name(err));
         return err;
     }
+
+    // NOW load current firmware version from NVS
+    load_current_firmware_version();
+    ESP_LOGI(TAG, "Using firmware version: %s", current_firmware_version);
 
     // Initialize sub-modules
     err = ota_http_client_init();
