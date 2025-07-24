@@ -6,11 +6,13 @@ cmake_minimum_required(VERSION 3.5)
 
 # Include the test directory if it exists
 if(EXISTS ${CMAKE_SOURCE_DIR}/test)
-set(EXTRA_COMPONENT_DIRS ${CMAKE_SOURCE_DIR}/test)
+    set(EXTRA_COMPONENT_DIRS ${CMAKE_SOURCE_DIR}/test)
 endif()
 
 include($ENV{IDF_PATH}/tools/cmake/project.cmake)
-if(EXISTS $ENV{IDF_PATH}/tools/cmake/test.cmake){
-  include($ENV{IDF_PATH}/tools/cmake/test.cmake)
-}
+
+if(EXISTS "$ENV{IDF_PATH}/tools/cmake/test.cmake")
+    include("$ENV{IDF_PATH}/tools/cmake/test.cmake")
+endif()
+
 project(esp32-example)
