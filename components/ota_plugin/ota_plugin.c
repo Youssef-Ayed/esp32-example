@@ -26,6 +26,59 @@ static int64_t plugin_start_time = 0;
 #define NVS_NAMESPACE "ota_plugin"
 #define NVS_KEY_UPDATE_STATUS "update_status"
 #define NVS_KEY_LAST_VERSION "last_version"
+#define NVS_KEY_CURRENT_VERSION "current_version"
+
+static char current_firmware_version[32] = OTA_FIRMWARE_VERSION;
+
+static esp_err_t load_current_firmware_version(void)
+{
+    nvs_handle_t nvs_handle;
+    esp_err_t err = nvs_open(NVS_NAMESPACE, NVS_READONLY, &nvs_handle);
+    if (err != ESP_OK)
+    {
+        ESP_LOGW(TAG, "Could not open NVS to load firmware version, using default");
+        return ESP_OK; // Use default version
+    }
+
+    size_t required_size = sizeof(current_firmware_version);
+    err = nvs_get_str(nvs_handle, NVS_KEY_CURRENT_VERSION, current_firmware_version, &required_size);
+    if (err != ESP_OK)
+    {
+        ESP_LOGW(TAG, "Could not load firmware version from NVS, using default");
+        strcpy(current_firmware_version, OTA_FIRMWARE_VERSION);
+    }
+    else
+    {
+        ESP_LOGI(TAG, "Loaded firmware version from NVS: %s", current_firmware_version);
+    }
+
+    nvs_close(nvs_handle);
+    return ESP_OK;
+}
+
+static esp_err_t save_current_firmware_version(const char *version)
+{
+    nvs_handle_t nvs_handle;
+    esp_err_t err = nvs_open(NVS_NAMESPACE, NVS_READWRITE, &nvs_handle);
+    if (err != ESP_OK)
+    {
+        return err;
+    }
+
+    err = nvs_set_str(nvs_handle, NVS_KEY_CURRENT_VERSION, version);
+    if (err == ESP_OK)
+    {
+        err = nvs_commit(nvs_handle);
+        if (err == ESP_OK)
+        {
+            strcpy(current_firmware_version, version);
+            ESP_LOGI(TAG, "Updated firmware version to: %s", version);
+        }
+    }
+
+    nvs_close(nvs_handle);
+    return err;
+}
 
 static esp_err_t check_and_report_boot_status(void)
 {
@@ -55,7 +108,7 @@ static esp_err_t check_and_report_boot_status(void)
 
         // Report the status
         esp_err_t report_err = ota_http_report_firmware_status(DEVICE_ID,
-                                                               strlen(last_version) > 0 ? last_version : FIRMWARE_REF,
+                                                               strlen(last_version) > 0 ? last_version : current_firmware_version,
                                                                update_status);
 
         if (report_err == ESP_OK)
@@ -116,7 +169,7 @@ static void ota_check_task(void *pvParameters)
         char firmware_url[OTA_URL_BUFFER_SIZE] = {0};
         char new_version[64] = {0};
 
-        esp_err_t err = ota_http_check_firmware_update(DEVICE_ID, OTA_FIRMWARE_VERSION,
+        esp_err_t err = ota_http_check_firmware_update(DEVICE_ID, current_firmware_version,
                                                        &update_available, firmware_url,
                                                        sizeof(firmware_url), new_version,
                                                        sizeof(new_version));
@@ -125,7 +178,7 @@ static void ota_check_task(void *pvParameters)
         {
             if (update_available)
             {
-                ESP_LOGI(TAG, "Firmware update available: %s -> %s", OTA_FIRMWARE_VERSION, new_version);
+                ESP_LOGI(TAG, "Firmware update available: %s -> %s", current_firmware_version, new_version);
                 ota_log_info("Firmware update available", new_version);
 
                 if (trace_ctx)
@@ -143,13 +196,14 @@ static void ota_check_task(void *pvParameters)
 
                 if (err == ESP_OK)
                 {
-                    // This shouldn't be reached as device should restart
-                    ESP_LOGI(TAG, "OTA update completed successfully");
-                    current_status = OTA_STATUS_SUCCESS;
-                    // Update the firmware version in NVS or other persistent storage
+                    // Update firmware version and save success status
+                    save_current_firmware_version(new_version);
                     save_update_status("COMPLETED", new_version);
-                    // Update the macro or variable for OTA_FIRMWARE_VERSION
-                    // (This requires a mechanism to reload or redefine the macro dynamically)
+
+                    ESP_LOGI(TAG, "OTA update completed successfully, restarting...");
+                    current_status = OTA_STATUS_SUCCESS;
+
+                    // Device will restart automatically from esp_https_ota
                 }
                 else
                 {
@@ -200,6 +254,9 @@ esp_err_t ota_plugin_init(void)
     ESP_LOGI(TAG, "Initializing OTA plugin...");
     plugin_start_time = esp_timer_get_time();
 
+    // Load current firmware version from NVS
+    load_current_firmware_version();
+
     // Initialize NVS
     esp_err_t err = nvs_flash_init();
     if (err == ESP_ERR_NVS_NO_FREE_PAGES || err == ESP_ERR_NVS_NEW_VERSION_FOUND)
@@ -246,7 +303,7 @@ esp_err_t ota_plugin_init(void)
     current_status = OTA_STATUS_IDLE;
 
     ESP_LOGI(TAG, "OTA plugin initialized successfully");
-    ota_log_info("OTA plugin initialized", FIRMWARE_REF);
+    ota_log_info("OTA plugin initialized", current_firmware_version);
 
     return ESP_OK;
 }
@@ -365,7 +422,7 @@ esp_err_t ota_plugin_check_update(void)
     char firmware_url[OTA_URL_BUFFER_SIZE] = {0};
     char new_version[64] = {0};
 
-    esp_err_t err = ota_http_check_firmware_update(DEVICE_ID, OTA_FIRMWARE_VERSION,
+    esp_err_t err = ota_http_check_firmware_update(DEVICE_ID, current_firmware_version,
                                                    &update_available, firmware_url,
                                                    sizeof(firmware_url), new_version,
                                                    sizeof(new_version));
@@ -374,7 +431,7 @@ esp_err_t ota_plugin_check_update(void)
     {
         if (update_available)
         {
-            ESP_LOGI(TAG, "Manual check: Update available %s -> %s", OTA_FIRMWARE_VERSION, new_version);
+            ESP_LOGI(TAG, "Manual check: Update available %s -> %s", current_firmware_version, new_version);
             ota_log_info("Manual OTA check: Update available", new_version);
         }
         else

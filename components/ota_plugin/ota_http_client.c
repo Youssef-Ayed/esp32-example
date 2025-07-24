@@ -84,6 +84,10 @@ esp_err_t ota_http_post_json(const char *endpoint, const char *json_data, char *
         .timeout_ms = OTA_SERVER_TIMEOUT_MS,
         .crt_bundle_attach = esp_crt_bundle_attach,
         .skip_cert_common_name_check = !OTA_SSL_VERIFICATION,
+        .keep_alive_enable = true,
+        .keep_alive_idle = 5,
+        .keep_alive_interval = 5,
+        .keep_alive_count = 3,
     };
 
     esp_http_client_handle_t client = esp_http_client_init(&config);
