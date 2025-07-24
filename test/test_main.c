@@ -1,5 +1,5 @@
 #include "unity.h"
-#include "main.h" // Include the header file of the main application
+#include "test_main.h" // Include the header file for test declarations
 
 // Dummy test setup function
 void setUp(void)
