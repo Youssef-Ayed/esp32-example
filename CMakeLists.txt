@@ -9,6 +9,10 @@ if(EXISTS ${CMAKE_SOURCE_DIR}/test)
     set(EXTRA_COMPONENT_DIRS ${CMAKE_SOURCE_DIR}/test)
 endif()
 
+# Set the custom partition table
+set(PARTITION_TABLE_SINGLE_APP_SIZE 0x100000)
+set(PARTITION_TABLE_CSV_PATH ${CMAKE_CURRENT_SOURCE_DIR}/partitions.csv)
+
 include($ENV{IDF_PATH}/tools/cmake/project.cmake)
 
 if(EXISTS "$ENV{IDF_PATH}/tools/cmake/test.cmake")

@@ -8,7 +8,7 @@ extern "C"
 
 // Server Configuration
 #define OTA_SERVER_BASE_URL "http://192.168.10.149:5000/api" // Backend server URL
-#define OTA_SERVER_TIMEOUT_MS 30000                          // 30 seconds timeout for HTTP requests
+#define OTA_SERVER_TIMEOUT_MS 150000                         // 150 seconds timeout for HTTP requests
 #define OTA_MAX_HTTP_OUTPUT_BUFFER 2048                      // Maximum buffer size for HTTP responses
 
 // Device Configuration
@@ -23,10 +23,10 @@ extern "C"
 #define OTA_RETRY_DELAY_MS 5000         // Delay between retries
 
 // Feature Flags
-#define OTA_METRICS_ENABLED true  // Enable metrics collection
-#define OTA_LOGGING_ENABLED true  // Enable logging to remote server
-#define OTA_TRACING_ENABLED true  // Enable tracing for operations
-#define OTA_SSL_VERIFICATION true // Enable SSL verification for secure connections
+#define OTA_METRICS_ENABLED true   // Enable metrics collection
+#define OTA_LOGGING_ENABLED true   // Enable logging to remote server
+#define OTA_TRACING_ENABLED true   // Enable tracing for operations
+#define OTA_SSL_VERIFICATION false // Enable SSL verification for secure connections
 
 // Task Configuration
 #define OTA_TASK_STACK_SIZE 8192           // Stack size for OTA tasks

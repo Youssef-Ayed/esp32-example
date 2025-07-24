@@ -384,6 +384,8 @@ esp_err_t ota_http_download_and_install_firmware(const char *firmware_url)
     esp_http_client_config_t http_config = {
         .url = firmware_url,
         .timeout_ms = OTA_SERVER_TIMEOUT_MS,
+        .use_global_ca_store = false,
+        .crt_bundle_attach = esp_crt_bundle_attach,
         .skip_cert_common_name_check = !OTA_SSL_VERIFICATION,
     };
 
