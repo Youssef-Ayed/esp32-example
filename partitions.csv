@@ -1,10 +1,9 @@
 # Name,   Type, SubType, Offset,  Size,    Flags
-# Note: if you have increased the bootloader size, make sure to update the offsets to avoid overlap
-nvs,      data, nvs,     0x9000,  0x6000,
-phy_init, data, phy,     0xf000,  0x1000,
+# Note: Custom partition table for 4MB flash with OTA support
+nvs,      data, nvs,     0x9000,  0x5000,
+phy_init, data, phy,     0xe000,  0x1000,
 factory,  app,  factory, 0x10000, 0x100000,
 otadata,  data, ota,     0x110000,0x2000,
-app0,     app,  ota_0,   0x120000,0x280000,
-app1,     app,  ota_1,   0x3A0000,0x280000,
-nvs_key,  data, nvs_keys,0x620000,0x1000,
-spiffs,   data, spiffs,  0x621000,0xDF000,
+app0,     app,  ota_0,   0x120000,0x140000,
+app1,     app,  ota_1,   0x260000,0x140000,
+spiffs,   data, spiffs,  0x3A0000,0x60000,
