@@ -116,7 +116,7 @@ static void ota_check_task(void *pvParameters)
         char firmware_url[OTA_URL_BUFFER_SIZE] = {0};
         char new_version[64] = {0};
 
-        esp_err_t err = ota_http_check_firmware_update(DEVICE_ID, FIRMWARE_REF,
+        esp_err_t err = ota_http_check_firmware_update(DEVICE_ID, OTA_FIRMWARE_VERSION,
                                                        &update_available, firmware_url,
                                                        sizeof(firmware_url), new_version,
                                                        sizeof(new_version));
@@ -125,7 +125,7 @@ static void ota_check_task(void *pvParameters)
         {
             if (update_available)
             {
-                ESP_LOGI(TAG, "Firmware update available: %s -> %s", FIRMWARE_REF, new_version);
+                ESP_LOGI(TAG, "Firmware update available: %s -> %s", OTA_FIRMWARE_VERSION, new_version);
                 ota_log_info("Firmware update available", new_version);
 
                 if (trace_ctx)
@@ -146,7 +146,10 @@ static void ota_check_task(void *pvParameters)
                     // This shouldn't be reached as device should restart
                     ESP_LOGI(TAG, "OTA update completed successfully");
                     current_status = OTA_STATUS_SUCCESS;
+                    // Update the firmware version in NVS or other persistent storage
                     save_update_status("COMPLETED", new_version);
+                    // Update the macro or variable for OTA_FIRMWARE_VERSION
+                    // (This requires a mechanism to reload or redefine the macro dynamically)
                 }
                 else
                 {
@@ -362,7 +365,7 @@ esp_err_t ota_plugin_check_update(void)
     char firmware_url[OTA_URL_BUFFER_SIZE] = {0};
     char new_version[64] = {0};
 
-    esp_err_t err = ota_http_check_firmware_update(DEVICE_ID, FIRMWARE_REF,
+    esp_err_t err = ota_http_check_firmware_update(DEVICE_ID, OTA_FIRMWARE_VERSION,
                                                    &update_available, firmware_url,
                                                    sizeof(firmware_url), new_version,
                                                    sizeof(new_version));
@@ -371,7 +374,7 @@ esp_err_t ota_plugin_check_update(void)
     {
         if (update_available)
         {
-            ESP_LOGI(TAG, "Manual check: Update available %s -> %s", FIRMWARE_REF, new_version);
+            ESP_LOGI(TAG, "Manual check: Update available %s -> %s", OTA_FIRMWARE_VERSION, new_version);
             ota_log_info("Manual OTA check: Update available", new_version);
         }
         else

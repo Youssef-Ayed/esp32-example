@@ -14,6 +14,7 @@ extern "C"
 // Device Configuration
 #define DEVICE_ID "Test_Device_001"   // This can be generated or flashed
 #define FIRMWARE_REF "esp32-devboard" // Current firmware reference, can be updated dynamically
+#define OTA_FIRMWARE_VERSION "1.0.0"  // Initial firmware version, updated dynamically
 
 // OTA Configuration
 #define OTA_CHECK_INTERVAL_MS 300000    // Check for updates every 5 minutes
